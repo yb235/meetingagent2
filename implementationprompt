@@ -1,0 +1,152 @@
+# Detailed Prompts and Docs for Implementing the Meeting Agent Plan
+
+This document provides step-by-step prompts, references, and guidance for a "dummy LLM model" (e.g., a basic AI agent) to implement the consolidated tech stack and architecture for the meeting agent. The agent must follow these prompts sequentially, understanding each concept before proceeding. Each section includes:
+
+- **Objective**: What the step achieves.
+- **Prerequisites**: What the agent must know or have.
+- **Detailed Prompt**: Instructions the agent can execute (copy-paste into a tool or environment).
+- **References**: Links to repos/docs for examples and code snippets.
+- **Expected Output**: What the agent should produce.
+- **Verification**: How to check if done correctly.
+- **Common Pitfalls**: Warnings for the dummy model.
+
+The overall plan is a modular monorepo with Recall.ai (core), Deepgram (transcription), OpenAI (AI), and Cartesia (voice). Use Node.js/Electron for frontend, Python/FastAPI for backend.
+
+## Step 1: Set Up the Monorepo Structure
+**Objective**: Create the base folder structure for easy maintenance and development.
+
+**Prerequisites**: Understand monorepos (single repo with subdirs for frontend/backend). Know Git basics. Have Node.js and Python installed.
+
+**Detailed Prompt**:
+1. Create a new GitHub repo called `meeting-agent-monorepo`.
+2. Initialize with `npm init -y` in the root.
+3. Create subdirs: `backend/`, `frontend/`, `shared/`, `tests/`, `docs/`.
+4. In `backend/`, run `pip install fastapi uvicorn` and create `requirements.txt`.
+5. In `frontend/`, run `npm install electron` and create `package.json` scripts for "start": "electron .".
+6. Add a `.gitignore` for `node_modules/`, `__pycache__/`, `.env`.
+7. Commit with message "Initial monorepo structure".
+
+**References**:
+- `recallai/muesli-public`: See its structure (main.js, services/).
+- `nex-crm/desktop-meeting-recorder`: Electron + services layout.
+- Docs: https://docs.npmjs.com/cli/v9/commands/npm-init
+
+**Expected Output**: A GitHub repo with folders: backend/, frontend/, etc. No code yet, just structure.
+
+**Verification**: Run `tree` in root; should match the architecture diagram.
+
+**Common Pitfalls**: Don't mix languages in wrong dirs (Python in frontend). Use relative paths.
+
+## Step 2: Implement Backend Transcription Service
+**Objective**: Build the service for joining meetings and transcribing with Recall.ai + Deepgram.
+
+**Prerequisites**: Know APIs (REST, webhooks). Understand async Python (asyncio). Have Recall.ai API key.
+
+**Detailed Prompt**:
+1. In `backend/services/transcription.py`, import `requests` and `os`.
+2. Define class `TranscriptionService` with `__init__` for API key.
+3. Add method `join_meeting(meeting_url)`: POST to Recall.ai `/bot/` with transcription options (deepgram model: "nova-2").
+4. Add method `get_transcript(bot_id)`: GET `/bot/{bot_id}/transcript/`.
+5. Handle webhooks for real-time events (e.g., `transcript.data`).
+6. In `backend/main.py`, create FastAPI app with endpoint `/join` calling `join_meeting`.
+7. Run `uvicorn main:app --reload` to test.
+
+**References**:
+- `recallai/muesli-public`: Code for bot creation and transcript fetching (lines 1533-1613 in bot.go).
+- `harrison-peng/recallai-go`: Go code for API calls; adapt to Python.
+- Docs: https://docs.recall.ai/docs/getting-started
+
+**Expected Output**: Python file with class; API returns bot ID on join.
+
+**Verification**: Join a test Zoom meeting; check console for transcripts.
+
+**Common Pitfalls**: API rate limits; handle errors with try/except. Use env vars for keys.
+
+## Step 3: Implement Backend AI Processor Service
+**Objective**: Add OpenAI for summarizing transcripts and generating questions.
+
+**Prerequisites**: Know OpenAI API. Understand prompts (e.g., "Summarize this text").
+
+**Detailed Prompt**:
+1. In `backend/services/ai_processor.py`, import `openai`.
+2. Define class `AIProcessor` with `__init__` for API key.
+3. Add method `summarize_transcript(transcript)`: Call OpenAI chat with prompt "Summarize this meeting transcript in 3 sentences: {transcript}".
+4. Add method `generate_question(user_input)`: "Rephrase this as a meeting question: {user_input}".
+5. In `backend/api/routes.py`, add endpoints `/summarize` and `/generate-question`.
+6. Integrate with transcription service: On new transcript, auto-summarize.
+
+**References**:
+- `patricktrainer/engineering-affirmations`: Python + OpenAI integration.
+- Docs: https://platform.openai.com/docs/introduction
+
+**Expected Output**: AI responses like "The team discussed Q3 goals."
+
+**Verification**: Test with sample transcript; output should be concise.
+
+**Common Pitfalls**: Token limits; use GPT-4o-mini for cost. Prompt tune for accuracy.
+
+## Step 4: Implement Backend Voice Service
+**Objective**: Add Cartesia TTS for vocal questions in meetings.
+
+**Prerequisites**: Know TTS APIs. Understand audio streaming.
+
+**Detailed Prompt**:
+1. In `backend/services/voice.py`, import `requests`.
+2. Define class `VoiceService` with `__init__` for API key.
+3. Add method `generate_audio(text)`: POST to Cartesia API with voice "Professional-Man" and text.
+4. Return audio bytes; save to file if needed.
+5. In `backend/api/routes.py`, add endpoint `/speak` calling `generate_audio`.
+6. Integrate: On question, generate audio and send to Recall.ai bot (via API patch).
+
+**References**:
+- `Hamza7661/Botie-Voice-Agent`: Voice integration patterns.
+- Docs: https://docs.cartesia.ai/
+
+**Expected Output**: Audio file from text.
+
+**Verification**: Play audio; should sound natural.
+
+**Common Pitfalls**: Audio format mismatch; test latency.
+
+## Step 5: Implement Frontend UI
+**Objective**: Build Electron app for user interface (send questions, view briefs).
+
+**Prerequisites**: Know Electron (main/renderer). HTML/CSS basics.
+
+**Detailed Prompt**:
+1. In `frontend/main.js`, create Electron window loading `index.html`.
+2. In `frontend/src/index.html`, add form for question input and div for briefs.
+3. Add JavaScript to call backend APIs (e.g., fetch `/generate-question`).
+4. Use WebSocket for real-time briefs (e.g., socket.io-client).
+5. In `frontend/package.json`, add script "start": "electron .".
+
+**References**:
+- `nex-crm/desktop-meeting-recorder`: Electron structure.
+- Docs: https://www.electronjs.org/docs
+
+**Expected Output**: Desktop app with input/output.
+
+**Verification**: Type question; see generated text.
+
+**Common Pitfalls**: CORS issues; use localhost for backend.
+
+## Step 6: Integrate and Test Full Flow
+**Objective**: Connect all services for end-to-end meeting agent.
+
+**Prerequisites**: All services working individually.
+
+**Detailed Prompt**:
+1. In `backend/main.py`, add WebSocket for real-time updates.
+2. Link services: Transcription → AI → Voice.
+3. Add Docker: `Dockerfile` for backend, `docker-compose.yml` for full stack.
+4. Test: Join meeting, get summary, send question, hear voice.
+
+**References**:
+- All repos above for integration examples.
+- Docs: https://docs.docker.com/
+
+**Expected Output**: Working agent.
+
+**Verification**: Full demo.
+
+**Common Pitfalls**: Sync issues; log everything.
