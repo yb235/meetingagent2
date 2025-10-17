@@ -1,0 +1,22 @@
+{
+  "name": "meeting-agent-monorepo",
+  "version": "1.0.0",
+  "description": "Meeting agent with Recall.ai, Deepgram, OpenAI, and Cartesia",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "frontend": "cd frontend && npm start",
+    "backend": "cd backend && uvicorn main:app --reload"
+  },
+  "keywords": [
+    "meeting",
+    "agent",
+    "recall",
+    "deepgram",
+    "openai",
+    "cartesia"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {}
+}

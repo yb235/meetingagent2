@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Agent</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Meeting Agent</h1>
+            <p class="subtitle">AI-powered meeting assistant</p>
+        </header>
+
+        <main>
+            <!-- Meeting Control Section -->
+            <section class="card">
+                <h2>Meeting Controls</h2>
+                <div class="form-group">
+                    <label for="meeting-url">Meeting URL:</label>
+                    <input 
+                        type="text" 
+                        id="meeting-url" 
+                        placeholder="Enter Zoom, Google Meet, or Teams URL"
+                        class="input-field"
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="bot-name">Bot Name:</label>
+                    <input 
+                        type="text" 
+                        id="bot-name" 
+                        placeholder="Meeting Agent"
+                        value="Meeting Agent"
+                        class="input-field"
+                    >
+                </div>
+                <button id="join-btn" class="btn btn-primary">Join Meeting</button>
+                <button id="leave-btn" class="btn btn-danger" disabled>Leave Meeting</button>
+                <div id="status" class="status-message"></div>
+            </section>
+
+            <!-- Live Transcript Section -->
+            <section class="card">
+                <h2>Live Transcript & Summary</h2>
+                <div id="transcript-area" class="transcript-area">
+                    <p class="placeholder">Transcript will appear here once the meeting starts...</p>
+                </div>
+                <button id="summarize-btn" class="btn btn-secondary" disabled>Generate Summary</button>
+                <div id="summary-area" class="summary-area"></div>
+            </section>
+
+            <!-- Question Input Section -->
+            <section class="card">
+                <h2>Ask a Question</h2>
+                <div class="form-group">
+                    <label for="question-input">Your Question:</label>
+                    <textarea 
+                        id="question-input" 
+                        placeholder="Type your question here..."
+                        class="textarea-field"
+                        rows="3"
+                    ></textarea>
+                </div>
+                <button id="ask-btn" class="btn btn-primary" disabled>Ask Question</button>
+                <div id="generated-question" class="generated-question"></div>
+            </section>
+
+            <!-- Key Points & Action Items -->
+            <section class="card">
+                <h2>Key Points & Action Items</h2>
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="key-points">Key Points</button>
+                    <button class="tab-btn" data-tab="action-items">Action Items</button>
+                </div>
+                <div id="key-points" class="tab-content active">
+                    <div id="key-points-list" class="list-area">
+                        <p class="placeholder">Key points will appear here...</p>
+                    </div>
+                    <button id="extract-points-btn" class="btn btn-secondary" disabled>Extract Key Points</button>
+                </div>
+                <div id="action-items" class="tab-content">
+                    <div id="action-items-list" class="list-area">
+                        <p class="placeholder">Action items will appear here...</p>
+                    </div>
+                    <button id="extract-actions-btn" class="btn btn-secondary" disabled>Extract Action Items</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
